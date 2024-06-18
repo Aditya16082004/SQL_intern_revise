@@ -228,7 +228,13 @@ SELECT * FROM clients WHERE address = 'Los Angeles';
 -- Retrieve purchases made by clients older than 25
 SELECT * FROM purchases WHERE client_id IN (SELECT client_id FROM clients WHERE client_age > 25);
 
+
+
+
 -- arithematic operators
+
+
+
 
 -- Calculate the sum of all item prices to get the total revenue
 SELECT SUM(item_price) AS total_revenue FROM items;
@@ -239,7 +245,13 @@ SELECT * FROM items WHERE item_price % 3 = 0;
 -- Calculate the difference between each item's price and the average price
 SELECT item_id, item_name, item_price, (item_price - (SELECT AVG(item_price) FROM items)) AS price_difference FROM items;
 
+
+
+
 -- comparison operators
+
+
+
 -- Select items with a price of 50000 or more
 SELECT * 
 FROM items 
@@ -255,7 +267,10 @@ SELECT *
 FROM purchases 
 WHERE total_amount <= 10000;
 
+
 -- Bitwise operators
+
+
 -- The bitwise AND (&) operator performs a binary AND operation on each pair of corresponding bits in the operands.
 -- For example, 5 & 3 in binary is 0101 & 0011 which results in 0001, which is the decimal value 1.
 SELECT 5 & 3; -- Result: 1
@@ -268,15 +283,19 @@ SELECT 5 | 3; -- Result: 7
 -- For example, 5 ^ 3 in binary is 0101 ^ 0011 which results in 0110, which is the decimal value 6.
 SELECT 5 ^ 3; -- Result: 6
 
+
 -- logical operators
 
+
 -- Select items located in 'Los Angeles' with a quantity greater than 10
+
 SELECT * 
 FROM items 
 WHERE city = 'Los Angeles' 
 AND quantity > 10;
 
 -- Select clients who are from 'New York' or have made purchases totaling more than 20000
+
 SELECT * 
 FROM clients 
 WHERE address = 'New York' 
