@@ -1,0 +1,368 @@
+use internsql;
+-- Create tables
+CREATE TABLE IF NOT EXISTS employees (
+    employee_id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    department_id INT,
+    job_title VARCHAR(50),
+    salary DECIMAL(10, 2)
+);
+
+CREATE TABLE IF NOT EXISTS customer (
+    cid INT AUTO_INCREMENT PRIMARY KEY,
+    cname VARCHAR(100),
+    age INT,
+    addr VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS products (
+    pid INT AUTO_INCREMENT PRIMARY KEY,
+    pname VARCHAR(100),
+    price DECIMAL(10, 2),
+    stock INT,
+    location VARCHAR(100)
+);
+
+CREATE TABLE IF NOT EXISTS sales (
+    sale_id INT AUTO_INCREMENT PRIMARY KEY,
+    category VARCHAR(100),
+    amount DECIMAL(10, 2)
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+    oid INT AUTO_INCREMENT PRIMARY KEY,
+    cid INT,
+    pid INT,
+    amt DECIMAL(10, 2),
+    FOREIGN KEY (cid) REFERENCES customer(cid),
+    FOREIGN KEY (pid) REFERENCES products(pid)
+);
+
+-- Insert sample data
+INSERT INTO employees (first_name, last_name, department_id, job_title, salary)
+VALUES 
+    ('John', 'Doe', 1, 'Manager', 75000.00),
+    ('Jane', 'Smith', 1, 'Team Lead', 65000.00),
+    ('Michael', 'Johnson', 2, 'Developer', 60000.00),
+    ('Emily', 'Williams', 2, 'Developer', 60000.00),
+    ('Robert', 'Brown', 1, 'Analyst', 55000.00),
+    ('Jessica', 'Miller', 3, 'Designer', 50000.00),
+    ('William', 'Davis', 3, 'Designer', 50000.00),
+    ('Mary', 'Wilson', 1, 'Manager', 80000.00);
+
+INSERT INTO customer (cname, age, addr)
+VALUES 
+    ('John Smith', 35, '123 Main St, Anytown, USA'),
+    ('Jane Doe', 28, '456 Oak Ave, Anycity, USA'),
+    ('Michael Johnson', 40, '789 Elm Blvd, Anystate, USA'),
+    ('Emily Williams', 32, '567 Pine Dr, Anothercity, USA');
+
+INSERT INTO products (pname, price, stock, location)
+VALUES 
+    ('Product A', 100.00, 50, 'New York'),
+    ('Product B', 150.00, 100, 'Los Angeles'),
+    ('Product C', 200.00, 75, 'Chicago'),
+    ('Product D', 75.00, 30, 'Houston');
+
+INSERT INTO sales (category, amount)
+VALUES 
+    ('Electronics', 5000.00),
+    ('Clothing', 3000.00),
+    ('Books', 2000.00),
+    ('Electronics', 7000.00),
+    ('Clothing', 4000.00);
+
+INSERT INTO orders (cid, pid, amt)
+VALUES 
+    (1, 1, 100.00),
+    (2, 2, 150.00),
+    (3, 3, 200.00),
+    (4, 1, 75.00),
+    (1, 2, 125.00),
+    (3, 4, 50.00),
+    (2, 3, 180.00);
+
+-- Basic Select queries
+SELECT * FROM employees; -- Retrieves all columns from the employees table
+
+SELECT employee_id AS id, first_name, last_name -- Selects specific columns with aliases for readability
+FROM employees;
+
+SELECT * FROM employees -- Filters employees by department_id 10
+WHERE department_id = 10;
+
+SELECT DISTINCT job_title -- Lists unique job titles from employees
+FROM employees;
+
+SELECT AVG(salary) AS avg_salary, MAX(salary) AS max_salary -- Calculates average and maximum salary across all employees
+FROM employees;
+
+-- Group By queries
+SELECT department_id, AVG(salary) AS avg_salary -- Computes average salary per department
+FROM employees
+GROUP BY department_id;
+
+SELECT department_id, AVG(salary) AS avg_salary -- Filters departments with average salary greater than 50000
+FROM employees
+GROUP BY department_id
+HAVING AVG(salary) > 50000;
+
+SELECT department_id, COUNT(*) AS num_employees -- Counts number of employees per department
+FROM employees
+GROUP BY department_id;
+
+SELECT department_id, job_title, AVG(salary) AS avg_salary -- Calculates average salary per department and job title
+FROM employees
+GROUP BY department_id, job_title;
+
+SELECT department_id, AVG(salary) AS avg_salary -- Lists departments ordered by average salary in descending order
+FROM employees
+GROUP BY department_id
+ORDER BY avg_salary DESC;
+
+-- Order By queries
+SELECT employee_id, last_name, first_name -- Orders employees by last name and first name in ascending order
+FROM employees
+ORDER BY last_name ASC, first_name ASC;
+
+SELECT employee_id, last_name, first_name -- Orders employees by last name and first name in descending order
+FROM employees
+ORDER BY last_name DESC, first_name DESC;
+
+SELECT employee_id, last_name, first_name -- Retrieves top 10 employees ordered by last name and first name
+FROM employees
+ORDER BY last_name ASC, first_name ASC
+LIMIT 10;
+
+-- Having queries
+SELECT department_id, AVG(salary) AS avg_salary -- Filters departments with average salary greater than 50000
+FROM employees
+GROUP BY department_id
+HAVING AVG(salary) > 50000;
+
+SELECT department_id, COUNT(*) AS num_employees
+FROM employees
+GROUP BY department_id
+HAVING COUNT(*) > 10;
+
+
+SELECT department_id, SUM(salary) AS total_salary -- Filters departments with total salary sum greater than 1000000
+FROM employees
+GROUP BY department_id
+HAVING SUM(salary) > 1000000;
+
+SELECT department_id, MAX(salary) AS max_salary -- Filters departments with maximum salary greater than 80000
+FROM employees
+GROUP BY department_id
+HAVING MAX(salary) > 80000;
+
+SELECT department_id, AVG(salary) AS avg_salary -- Filters departments with average salary greater than overall average salary
+FROM employees
+GROUP BY department_id
+HAVING AVG(salary) > (SELECT AVG(salary) FROM employees);
+
+-- In-built Functions queries
+SELECT CONCAT(first_name, ' ', last_name) AS full_name -- Combines first_name and last_name into full_name
+FROM employees;
+
+SELECT first_name, CHAR_LENGTH(first_name) AS name_length -- Retrieves first_name and its character length
+FROM employees;
+
+SELECT last_name, LCASE(last_name) AS lower_last_name -- Converts last_name to lowercase
+FROM employees;
+
+-- Numeric Functions queries
+SELECT department_id, AVG(salary) AS avg_salary -- Computes average salary across all employees
+FROM employees
+GROUP BY department_id;
+
+SELECT department_id, COUNT(*) AS num_employees -- Counts number of employees per department
+FROM employees
+GROUP BY department_id;
+
+SELECT POW(2, 3) AS power_result; -- Computes power of 2 to the power of 3
+
+SELECT MIN(salary) AS min_salary -- Finds minimum salary among all employees
+FROM employees;
+
+SELECT MAX(salary) AS max_salary -- Finds maximum salary among all employees
+FROM employees;
+
+-- Date & Time Functions queries
+SELECT CURRENT_DATE() AS current_date; -- Retrieves current date
+
+SELECT DAY_DIFF('2023-01-01', '2022-06-19') AS days_difference; -- Calculates difference in days between two dates
+
+SELECT ADDDATE('2023-06-19', INTERVAL 1 MONTH) AS one_month_later; -- Adds 1 month to the given date
+
+SELECT LAST_DAY('2023-02-01') AS last_day_of_month; -- Retrieves last day of the month for the given date
+
+SELECT SYSDATE() AS current_datetime; -- Retrieves current date and time from the system
+
+-- Group by using having
+SELECT cname, COUNT(*) AS Number
+FROM customer
+GROUP BY cname
+HAVING Number >= 1;
+
+-- Group by using concat
+SELECT location, GROUP_CONCAT(DISTINCT pname) AS product_names
+FROM products
+GROUP BY location;
+
+-- Group by with aggregate functions
+SELECT category, COUNT(*) as total_sales
+FROM sales
+GROUP BY category;
+
+SELECT category, SUM(amount) as total_amount
+FROM sales
+GROUP BY category;
+
+SELECT category, AVG(amount) as average_amount
+FROM sales
+GROUP BY category;
+
+SELECT category, MAX(amount) as max_amount, MIN(amount) as min_amount
+FROM sales
+GROUP BY category;
+
+-- Order By examples
+SELECT * FROM employees
+ORDER BY salary;
+
+SELECT pid, pname, price
+FROM products
+ORDER BY price ASC;
+
+SELECT cid, cname, age
+FROM customer
+ORDER BY age DESC;
+
+-- Having examples
+SELECT Salesperson, SUM(Amount) AS TotalSales
+FROM Sales
+GROUP BY Salesperson
+HAVING SUM(Amount) > 10000;
+
+SELECT CustomerID, COUNT(OrderID) AS OrderCount
+FROM Orders
+GROUP BY CustomerID
+HAVING COUNT(OrderID) > 5;
+
+-- Group By examples
+-- Total stock of products for each location
+SELECT location, SUM(stock) AS total_stock 
+FROM products 
+GROUP BY location;
+
+-- Number of products in each price range
+SELECT CASE 
+    WHEN price BETWEEN 0 AND 10000 THEN '0-10000' 
+    WHEN price BETWEEN 10001 AND 20000 THEN '10000-20000'
+    WHEN price BETWEEN 20001 AND 50000 THEN '20000-50000' 
+    ELSE '50000+' 
+    END AS price_range, COUNT(*) AS product_count
+FROM products 
+GROUP BY price_range;
+
+-- Average age of customers grouped by their location
+SELECT SUBSTRING(addr, 1, 3) AS location, AVG(age) AS avg_age 
+FROM customer 
+GROUP BY location;
+
+-- Order By examples
+-- Products ordered by price in descending order
+SELECT * 
+FROM products 
+ORDER BY price DESC;
+
+-- Customers ordered by age in ascending order
+SELECT * 
+FROM customer 
+ORDER BY age ASC;
+
+-- Orders ordered by amount in descending order and then by customer name in ascending order
+SELECT o.oid, c.cname, o.amt 
+FROM orders o 
+JOIN customer c ON o.cid = c.cid 
+ORDER BY o.amt DESC, c.cname ASC;
+
+-- Having examples
+-- Locations where total stock of products is greater than 20
+SELECT location, SUM(stock) AS total_stock 
+FROM products 
+GROUP BY location 
+HAVING SUM(stock) > 20;
+
+-- Customers who have placed orders with a total amount greater than 10000
+SELECT c.cid, c.cname, SUM(o.amt) AS total_amount 
+FROM customer c 
+JOIN orders o ON c.cid = o.cid 
+GROUP BY c.cid, c.cname 
+HAVING SUM(o.amt) > 10000;
+
+-- Products with stock between 10 and 20 located in Mumbai
+SELECT p.pid, p.pname, p.stock 
+FROM products p 
+WHERE p.location = 'Mumbai' 
+GROUP BY p.pid, p.pname, p.stock 
+HAVING p.stock BETWEEN 10 AND 20;
+
+-- Additional queries for DISTINCT, LIKE, CASE, IF, LIMIT
+SELECT DISTINCT cname, addr FROM customer;
+
+SELECT * FROM orders;
+
+SELECT oid FROM orders;
+
+SELECT * FROM customer WHERE cname LIKE "%Ra%";
+
+SELECT * FROM customer WHERE cname LIKE "Ra%";
+
+SELECT * FROM customer WHERE cname LIKE "%vi";
+
+SELECT cid, cname,
+       CASE WHEN cid > 102 THEN 'Pass' ELSE 'Fail' END AS 'Remark'
+FROM customer;
+
+SELECT cid, cname,
+       IF(cid > 102, 'Pass', 'Fail') AS 'Remark'
+FROM customer;
+
+SELECT * 
+FROM customer
+ORDER BY cid
+LIMIT 2;
+
+SELECT * FROM customer WHERE cname = "Ravi";
+
+-- Additional examples for DISTINCT, LENGTH, CONCAT
+SELECT DISTINCT location 
+FROM products;
+
+SELECT cid, cname, LENGTH(addr) AS address_length
+FROM customer;
+
+SELECT o.oid, c.cname, p.pname, CONCAT('Order for ', p.pname, ' by ', c.cname) AS order_description
+FROM orders o
+JOIN customer c ON o.cid = c.cid
+JOIN products p ON o.pid = p.pid;
+
+-- Additional example for CASE
+SELECT pid, pname, price,
+       CASE
+           WHEN price < 10000 THEN 'Low'
+           WHEN price BETWEEN 10000 AND 50000 THEN 'Medium'
+           ELSE 'High'
+       END AS price_category
+FROM products;
+
+-- Additional example with subquery
+SELECT c.cid, c.cname, (
+    SELECT SUM(amt)
+    FROM orders o
+    WHERE o.cid = c.cid
+) AS total_order_amount
+FROM customer c;
