@@ -1,0 +1,228 @@
+/*
+--> Subqueries	
+		Single row subqueries
+		Multi row subqueries
+		Correlated subqueries queries
+--> Joins	
+		Joins with subqueries
+		Joins with aggregate functions
+		Joins with date and time functions
+--> Analytics functions / Advanced functions	
+		RANK
+		DENSE_RANK
+		ROW_NUMBER
+		CUME_DIST
+		LAG
+		LEAD
+*/
+
+
+USE internsql;
+
+-- Create tables
+CREATE TABLE IF NOT EXISTS employees (
+    employee_id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    department_id INT,
+    job_title VARCHAR(50),
+    salary DECIMAL(10, 2)
+);
+
+CREATE TABLE IF NOT EXISTS customer (
+    cid INT AUTO_INCREMENT PRIMARY KEY,
+    cname VARCHAR(100),
+    age INT,
+    addr VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS products (
+    pid INT AUTO_INCREMENT PRIMARY KEY,
+    pname VARCHAR(100),
+    price DECIMAL(10, 2),
+    stock INT,
+    location VARCHAR(100)
+);
+
+CREATE TABLE IF NOT EXISTS sales (
+    sale_id INT AUTO_INCREMENT PRIMARY KEY,
+    category VARCHAR(100),
+    amount DECIMAL(10, 2)
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+    oid INT AUTO_INCREMENT PRIMARY KEY,
+    cid INT,
+    pid INT,
+    amt DECIMAL(10, 2),
+    FOREIGN KEY (cid) REFERENCES customer(cid),
+    FOREIGN KEY (pid) REFERENCES products(pid)
+);
+
+-- Insert sample data
+INSERT INTO employees (first_name, last_name, department_id, job_title, salary)
+VALUES 
+    ('John', 'Doe', 1, 'Manager', 75000.00),
+    ('Jane', 'Smith', 1, 'Team Lead', 65000.00),
+    ('Michael', 'Johnson', 2, 'Developer', 60000.00),
+    ('Emily', 'Williams', 2, 'Developer', 60000.00),
+    ('Robert', 'Brown', 1, 'Analyst', 55000.00),
+    ('Jessica', 'Miller', 3, 'Designer', 50000.00),
+    ('William', 'Davis', 3, 'Designer', 50000.00),
+    ('Mary', 'Wilson', 1, 'Manager', 80000.00);
+
+INSERT INTO customer (cname, age, addr)
+VALUES 
+    ('John Smith', 35, '123 Main St, Anytown, USA'),
+    ('Jane Doe', 28, '456 Oak Ave, Anycity, USA'),
+    ('Michael Johnson', 40, '789 Elm Blvd, Anystate, USA'),
+    ('Emily Williams', 32, '567 Pine Dr, Anothercity, USA');
+
+INSERT INTO products (pname, price, stock, location)
+VALUES 
+    ('Product A', 100.00, 50, 'New York'),
+    ('Product B', 150.00, 100, 'Los Angeles'),
+    ('Product C', 200.00, 75, 'Chicago'),
+    ('Product D', 75.00, 30, 'Houston');
+
+INSERT INTO sales (category, amount)
+VALUES 
+    ('Electronics', 5000.00),
+    ('Clothing', 3000.00),
+    ('Books', 2000.00),
+    ('Electronics', 7000.00),
+    ('Clothing', 4000.00);
+
+INSERT INTO orders (cid, pid, amt)
+VALUES 
+    (1, 1, 100.00),
+    (2, 2, 150.00),
+    (3, 3, 200.00),
+    (4, 1, 75.00),
+    (1, 2, 125.00),
+    (3, 4, 50.00),
+    (2, 3, 180.00);
+
+-- Subqueries
+
+-- Q1: Find the name of the customer who placed the order with the highest total amount.
+SELECT cname 
+FROM customer 
+WHERE cid = (
+    SELECT cid 
+    FROM orders 
+    GROUP BY cid 
+    ORDER BY SUM(amt) DESC 
+    LIMIT 1
+);
+
+-- Q2: Retrieve the names of all customers who have placed orders for products located in the same city as the customer named "Jane Doe".
+SELECT cname
+FROM customer
+WHERE cid IN (
+    SELECT DISTINCT cid
+    FROM orders
+    WHERE pid IN (
+        SELECT pid
+        FROM products
+        WHERE location = (
+            SELECT location
+            FROM products
+            WHERE pid IN (
+                SELECT pid
+                FROM orders
+                WHERE cid = (
+                    SELECT cid
+                    FROM customer
+                    WHERE cname = 'Jane Doe'
+                )
+            )
+            LIMIT 1
+        )
+    )
+);
+
+-- Q3: Retrieve the names of all customers who have placed orders for products that have a price higher than the average price of products bought by each customer.
+SELECT cname
+FROM customer c
+WHERE EXISTS (
+    SELECT 1
+    FROM orders o
+    JOIN products p ON o.pid = p.pid
+    WHERE o.cid = c.cid
+    AND p.price > (
+        SELECT AVG(price)
+        FROM products
+        WHERE pid IN (
+            SELECT pid
+            FROM orders
+            WHERE cid = c.cid
+        )
+    )
+);
+
+-- Q4: Find the name of the employee with the highest salary.
+SELECT first_name, last_name 
+FROM employees 
+WHERE salary = (SELECT MAX(salary) FROM employees);
+
+-- Q5: Retrieve the names of all employees who work in the same department as "Jane Smith".
+SELECT first_name, last_name 
+FROM employees 
+WHERE department_id = (SELECT department_id 
+                       FROM employees 
+                       WHERE first_name = 'Jane' AND last_name = 'Smith');
+
+-- Q6: Retrieve the names of all products that have a stock quantity higher than the average stock quantity of all products.
+SELECT pname 
+FROM products 
+WHERE stock > (SELECT AVG(stock) FROM products);
+
+-- Joins
+
+-- Q7: Retrieve the names of customers along with the names of products they have ordered.
+SELECT c.cname, p.pname 
+FROM customer c
+JOIN orders o ON c.cid = o.cid
+JOIN products p ON o.pid = p.pid;
+
+-- Q8: Retrieve the total amount spent on orders for each product.
+SELECT p.pname, SUM(o.amt) AS total_amount_spent 
+FROM products p
+JOIN orders o ON p.pid = o.pid
+GROUP BY p.pname;
+
+--
+
+ Q9: Retrieve the names of all products and the names of customers who ordered them, including products that have not been ordered.
+SELECT p.pname, COALESCE(c.cname, 'No customer') AS customer_name 
+FROM products p
+LEFT JOIN orders o ON p.pid = o.pid
+LEFT JOIN customer c ON o.cid = c.cid;
+
+-- Advanced Functions
+
+-- Q10: Retrieve the names of employees along with their salaries and the ranking of each employee based on their salaries, where the employees are ranked in descending order of salary.
+SELECT first_name, last_name, salary, RANK() OVER (ORDER BY salary DESC) AS salary_rank
+FROM employees;
+
+-- Q11: Retrieve the names of employees along with their salaries and the dense ranking of each employee based on their salaries, where employees are ranked in descending order of salary.
+SELECT first_name, last_name, salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS salary_rank
+FROM employees;
+
+-- Q12: Retrieve the names of employees along with their salaries and the row number of each employee, where employees are ordered by their salaries in descending order.
+SELECT first_name, last_name, salary, ROW_NUMBER() OVER (ORDER BY salary DESC) AS row_num
+FROM employees;
+
+-- Q13: Retrieve the names of employees along with their salaries and the cumulative distribution of each employee's salary, indicating what fraction of employees have salaries less than or equal to the salary of each employee.
+SELECT first_name, last_name, salary, CUME_DIST() OVER (ORDER BY salary) AS cumulative_distribution
+FROM employees;
+
+-- Q14: Retrieve the names of employees along with their salaries and the salary of the previous employee in the list, ordered by salary in ascending order.
+SELECT first_name, last_name, salary, LAG(salary) OVER (ORDER BY salary) AS previous_salary
+FROM employees;
+
+-- Q15: Retrieve the names of employees along with their salaries and the salary of the next employee in the list, ordered by salary in ascending order.
+SELECT first_name, last_name, salary, LEAD(salary) OVER (ORDER BY salary) AS next_salary
+FROM employees;
+
