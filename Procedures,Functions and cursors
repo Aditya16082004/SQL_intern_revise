@@ -1,0 +1,356 @@
+-- DELIMITER COMMAND:
+/*
+1. Purpose: 
+   - The DELIMITER command is used to change the standard delimiter(like a semicolon (;)), to a different character. 
+2. Usage:
+   - When defining stored procedures, functions, or other multi-statement constructs that contain semicolons within their body.
+   - This allows you to specify a different character as the delimiter to avoid prematurely terminating the entire statement.
+3. Syntax:
+   - The syntax for the DELIMITER command is as follows:
+     DELIMITER new_delimiter;
+4. Example:
+   - Changing the delimiter to //:
+     DELIMITER //
+     CREATE PROCEDURE procedure_name()
+     BEGIN
+			SQL statements
+     END //
+     DELIMITER ;
+
+5. Resetting the delimiter:
+   - After defining the stored procedure or function, you should reset the delimiter back to the standard semicolon (;) using:
+     DELIMITER ;
+*/
+
+-- DETERMINISTIC: 
+ /*
+DETERMINISTIC indicates that the function will always return the same result for the same input values.
+If the function contains any non-deterministic elements (e.g., calls to functions that return different values each time they are called),
+you should omit this keyword.
+*/
+
+
+-- PROCEDURES 
+ /*  A procedure is a set of SQL statements that can be saved and reused.
+  ~ Procedures can have input parameters (IN) and output parameters (OUT).
+  ~ Procedures do not return a value.
+  ~ A procedure is a prepared SQL code that you can save, so the code can be reused over and over again.
+  ~ So if you have an SQL query that you write over and over again, save it as a stored procedure, and then just call it to execute it. */
+ 
+ 
+-- CREATE PROCEDURE
+/* 
+Procedures in SQL allow you to encapsulate a series of SQL statements into a reusable unit.
+~ Syntax:
+	DELIMITER //
+		CREATE PROCEDURE procedure_name(parameter1 datatype, parameter2 datatype, ...)
+		BEGIN
+			Procedure logic goes here
+		END //
+	DELIMITER ;
+*/ 
+-- EXECUTING PROCEDURES
+/*
+Once a procedure is created, you can execute it using the CALL statement followed by the procedure name and any required parameters.
+~ Syntax:
+-- CALL procedure_name(parameter1, parameter2, ...);
+*/
+
+-- DROPPING PROCEDURES
+/*
+If a procedure is no longer needed, it can be dropped using the DROP PROCEDURE statement.
+~ Syntax: 
+	DROP PROCEDURE procedure_name;
+*/
+
+-- FUNCTIONS
+/*
+A function is a reusable block of code that performs a specific task and can return a value.
+Functions are similar to procedures, but procedures do not return values.
+Functions can have input parameters (IN) but cannot have output parameters.
+Input parameters allow you to pass data into the function, and the function can use that data to perform its task.
+*/
+
+-- FUNCTION CREATION
+/*
+To create a function, you need to define its name, input parameters (if any), and the data type of the value it returns.
+The function logic (the code that performs the task) goes inside the BEGIN and END blocks.
+
+Syntax:
+CREATE FUNCTION function_name(parameter1 data_type, parameter2 data_type, ...)
+RETURNS return_data_type
+AS
+BEGIN
+    -- Function logic here
+END;
+*/
+
+
+-- DROPPING FUNCTION
+/*
+If you no longer need a function, you can drop (delete) it using the DROP FUNCTION statement.
+Syntax:
+DROP FUNCTION [IF EXISTS] function_name;
+The IF EXISTS clause is optional and allows you to avoid an error if the function doesn't exist.
+*/
+-- IN
+/* 
+This In is a  part of procedures
+IN parameters in MySQL stored procedures allow you to pass values into the procedure.
+These values are read-only within the procedure and cannot be modified
+ */
+ 
+/* 
+~ Syntax for IN
+ CREATE PROCEDURE procedure_name(IN parameter_name data_type)
+ BEGIN
+    -- Procedure logic using parameter_name
+    END;
+*/
+/* 
+EXPLANATION:
+-> CREATE PROCEDURE get_product_details(IN product_id INT): This statement defines a procedure named get_product_details
+with an IN parameter product_id of type INT.
+-> BEGIN and END: These keywords mark the beginning and end of the procedure's body, respectively.
+-> SELECT * FROM products WHERE pid = product_id;: This is the SQL query inside the procedure that selects product details
+based on the product_id parameter.
+-> CALL get_product_details(3); This statement calls the procedure get_product_details with the argument 3, 
+which is the product ID to retrieve details for.
+*/
+
+
+
+-- OUT
+/* 
+This OUT is a  part of procedures
+ OUT  OUT parameters in MySQL stored procedures allow you to return values from a procedure. 
+These values can be accessed by the calling program after the procedure execution. 
+*/
+
+/* 
+~ Syntax
+ CREATE PROCEDURE procedure_name(OUT parameter_name data_type)
+ BEGIN
+    -- Procedure logic using parameter_name
+ END;
+*/
+
+/*
+EXPLANATION:
+-> CREATE PROCEDURE get_product_count(OUT product_count INT): This statement defines a procedure named get_product_count with an
+ OUT parameter product_count of type INT.
+-> BEGIN and END: These keywords mark the beginning and end of the procedures body, respectively.
+-> SELECT COUNT(*) INTO product_count FROM products;: This is the SQL query inside the procedure that calculates the 
+total number of products and stores it in the product_count variable.
+-> CALL get_product_count(@count);: This statement calls the procedure get_product_count and 
+passes the OUT parameter. The result is stored in the variable @count.
+*/
+
+
+
+-- CURSOR
+/*
+	1. Purpose:
+		- Cursors in SQL are used to retrieve and process rows one by one from the result set of a query.
+	2. Declaration:
+		- Cursors are declared using the DECLARE CURSOR statement, specifying the SELECT query whose result set will be processed.
+	3. Opening:
+		- A cursor must be opened using the OPEN statement before fetching rows.
+		- Opening a cursor positions the cursor before the first row.
+	4. Fetching:
+		- Rows from the result set are fetched one by one using the FETCH statement.
+		- Each fetch operation advances the cursor to the next row in the result set.
+	5. Closing:
+		- After processing all rows, the cursor should be closed using the CLOSE statement.
+		- Closing a cursor releases the resources associated with the result set and frees memory.
+*/
+
+
+
+use internsql;
+-- Create tables
+CREATE TABLE IF NOT EXISTS employees (
+    employee_id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    department_id INT,
+    job_title VARCHAR(50),
+    salary DECIMAL(10, 2)
+);
+
+CREATE TABLE IF NOT EXISTS customer (
+    cid INT AUTO_INCREMENT PRIMARY KEY,
+    cname VARCHAR(100),
+    age INT,
+    addr VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS products (
+    pid INT AUTO_INCREMENT PRIMARY KEY,
+    pname VARCHAR(100),
+    price DECIMAL(10, 2),
+    stock INT,
+    location VARCHAR(100)
+);
+
+CREATE TABLE IF NOT EXISTS sales (
+    sale_id INT AUTO_INCREMENT PRIMARY KEY,
+    category VARCHAR(100),
+    amount DECIMAL(10, 2)
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+    oid INT AUTO_INCREMENT PRIMARY KEY,
+    cid INT,
+    pid INT,
+    amt DECIMAL(10, 2),
+    FOREIGN KEY (cid) REFERENCES customer(cid),
+    FOREIGN KEY (pid) REFERENCES products(pid)
+);
+
+-- Insert sample data
+INSERT INTO employees (first_name, last_name, department_id, job_title, salary)
+VALUES 
+    ('John', 'Doe', 1, 'Manager', 75000.00),
+    ('Jane', 'Smith', 1, 'Team Lead', 65000.00),
+    ('Michael', 'Johnson', 2, 'Developer', 60000.00),
+    ('Emily', 'Williams', 2, 'Developer', 60000.00),
+    ('Robert', 'Brown', 1, 'Analyst', 55000.00),
+    ('Jessica', 'Miller', 3, 'Designer', 50000.00),
+    ('William', 'Davis', 3, 'Designer', 50000.00),
+    ('Mary', 'Wilson', 1, 'Manager', 80000.00);
+
+INSERT INTO customer (cname, age, addr)
+VALUES 
+    ('John Smith', 35, '123 Main St, Anytown, USA'),
+    ('Jane Doe', 28, '456 Oak Ave, Anycity, USA'),
+    ('Michael Johnson', 40, '789 Elm Blvd, Anystate, USA'),
+    ('Emily Williams', 32, '567 Pine Dr, Anothercity, USA');
+
+INSERT INTO products (pname, price, stock, location)
+VALUES 
+    ('Product A', 100.00, 50, 'New York'),
+    ('Product B', 150.00, 100, 'Los Angeles'),
+    ('Product C', 200.00, 75, 'Chicago'),
+    ('Product D', 75.00, 30, 'Houston');
+
+INSERT INTO sales (category, amount)
+VALUES 
+    ('Electronics', 5000.00),
+    ('Clothing', 3000.00),
+    ('Books', 2000.00),
+    ('Electronics', 7000.00),
+    ('Clothing', 4000.00);
+
+INSERT INTO orders (cid, pid, amt)
+VALUES 
+    (1, 1, 100.00),
+    (2, 2, 150.00),
+    (3, 3, 200.00),
+    (4, 1, 75.00),
+    (1, 2, 125.00),
+    (3, 4, 50.00),
+    (2, 3, 180.00);
+
+-- Change delimiter to handle procedures and functions
+DELIMITER $$
+
+-- Procedure: Retrieve Employees in a Department
+CREATE PROCEDURE get_employees_in_department(IN dept_id INT)
+BEGIN
+    -- Select employees based on department ID
+    SELECT * FROM employees WHERE department_id = dept_id;
+END$$
+
+-- Function: Calculate Total Sales Amount for a Category
+CREATE FUNCTION calculate_total_sales_amount(category_name VARCHAR(100))
+RETURNS DECIMAL(10, 2)
+BEGIN
+    DECLARE total_amount DECIMAL(10, 2);
+    
+    -- Calculate sum of sales amount for the given category
+    SELECT SUM(amount) INTO total_amount FROM sales WHERE category = category_name;
+    
+    -- Return the calculated total amount
+    RETURN total_amount;
+END$$
+
+-- Procedure: Update Product Stock
+CREATE PROCEDURE update_product_stock(IN product_id INT, IN new_stock INT)
+BEGIN
+    -- Update stock of a product based on product ID
+    UPDATE products SET stock = new_stock WHERE pid = product_id;
+END$$
+
+-- Function: Retrieve Customer Address
+CREATE FUNCTION get_customer_address(customer_id INT)
+RETURNS VARCHAR(255)
+BEGIN
+    DECLARE customer_addr VARCHAR(255);
+    
+    -- Retrieve customer address based on customer ID
+    SELECT addr INTO customer_addr FROM customer WHERE cid = customer_id;
+    
+    -- Return the customer address
+    RETURN customer_addr;
+END$$
+
+-- Procedure: Display Product Names using a User-Defined Cursor
+CREATE PROCEDURE display_product_names()
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE product_name VARCHAR(100);
+    
+    -- Declare cursor for selecting product names
+    DECLARE product_cursor CURSOR FOR SELECT pname FROM products;
+    
+    -- Handler for when no more rows found
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+    
+    OPEN product_cursor;
+    
+    read_loop: LOOP
+        FETCH product_cursor INTO product_name;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        
+        -- Display each product name
+        SELECT product_name;
+    END LOOP;
+    
+    CLOSE product_cursor;
+END$$
+
+-- Procedure: Calculate Total Salary of Employees using a Predefined Cursor
+CREATE PROCEDURE calculate_total_salary()
+BEGIN
+    DECLARE total_salary DECIMAL(10, 2) DEFAULT 0.00;
+    DECLARE emp_salary DECIMAL(10, 2);
+    
+    -- Declare cursor for selecting employee salaries
+    DECLARE emp_cursor CURSOR FOR SELECT salary FROM employees;
+    
+    -- Handler for when no more rows found
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET total_salary = total_salary;
+    
+    OPEN emp_cursor;
+    
+    read_loop: LOOP
+        FETCH emp_cursor INTO emp_salary;
+        IF total_salary IS NULL THEN
+            LEAVE read_loop;
+        END IF;
+        
+        -- Accumulate total salary
+        SET total_salary = total_salary + emp_salary;
+    END LOOP;
+    
+    CLOSE emp_cursor;
+    
+    -- Display the calculated total salary
+    SELECT total_salary AS total_salary_sum;
+END$$
+
+-- Reset delimiter to default
+DELIMITER ;
